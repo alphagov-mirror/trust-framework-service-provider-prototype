@@ -1,0 +1,26 @@
+
+.broker-logo {
+    height: 100px;
+    width: 100%;
+}
+
+.logo {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #f6f6f6;
+    height: 100px;
+    width: 100%;
+}
+
+button:hover{
+  cursor: pointer;
+}
+
+button{
+  border: none;
+}
+
+.placeholder-logo {
+    background-image: url('/assets/images/idp0.svg');
+}
