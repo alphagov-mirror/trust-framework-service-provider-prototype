@@ -45,9 +45,8 @@ public class AuthorizationResponseClientResource {
 
     @POST
     @Path("/validateAuthenticationResponse")
-    @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public View validateAuthenticationResponse(String postBody) throws java.text.ParseException, ParseException {
+    public String validateAuthenticationResponse(String postBody) throws java.text.ParseException, ParseException {
         Map<String, String> authenticationParams = QueryParameterHelper.splitQuery(postBody);
         String transactionID = authenticationParams.get("transactionID");
         String rpDomain = redisService.get(transactionID);
@@ -55,13 +54,13 @@ public class AuthorizationResponseClientResource {
         URI rpUri = UriBuilder.fromUri(rpDomain).build();
 
         if (postBody.isEmpty()) {
-            return new RPResponseView(rpUri, "Post Body is empty", Integer.toString(HttpStatus.SC_BAD_REQUEST));
+//            return new RPResponseView(rpUri, "Post Body is empty", Integer.toString(HttpStatus.SC_BAD_REQUEST));
         }
 
         Optional<String> errors = authnResponseValidationService.checkResponseForErrors(authenticationParams);
 
         if (errors.isPresent()) {
-            return new RPResponseView(rpUri, "Errors in Response: " + errors.get(), Integer.toString(HttpStatus.SC_BAD_REQUEST));
+//            return new RPResponseView(rpUri, "Errors in Response: " + errors.get(), Integer.toString(HttpStatus.SC_BAD_REQUEST));
         }
 
         String brokerName = getBrokerName(transactionID);
@@ -69,7 +68,7 @@ public class AuthorizationResponseClientResource {
         AuthorizationCode authorizationCode = authnResponseValidationService.handleAuthenticationResponse(authenticationParams, getClientID(brokerName));
         String userInfoInJson = retrieveTokenAndUserInfo(authorizationCode, brokerName, brokerDomain);
 
-        return new RPResponseView(rpUri, userInfoInJson, Integer.toString(HttpStatus.SC_OK));
+        return userInfoInJson;
     }
 
     private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerName, String brokerDomain) {

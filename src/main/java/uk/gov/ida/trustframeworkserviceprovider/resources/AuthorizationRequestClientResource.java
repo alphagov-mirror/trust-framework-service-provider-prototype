@@ -31,6 +31,26 @@ public class AuthorizationRequestClientResource {
     }
 
     @GET
+    @Path("/generateAuthenticationRequest")
+    public String generateAuthenticationRequest() {
+        String transactionID = new ClientID().toString();
+        String brokerDomain = configuration.getGovernmentBrokerURI();
+        String brokerName = "Post Office";
+        redisService.set(transactionID, configuration.getRpURI());
+        storeBrokerNameAndDomain(transactionID, brokerName, configuration.getGovernmentBrokerURI());
+        URI redirectUri = UriBuilder.fromUri(configuration.getRpURI()).path(Urls.RP.REDIRECT_URI).build();
+        URI authorisationURI = UriBuilder.fromUri(brokerDomain).path("/authorizeFormPost/authorize-sp").build();
+
+        return authnRequestGeneratorService.generateAuthenticationRequest(
+                        authorisationURI,
+                        getClientID(brokerName),
+                        redirectUri,
+                        new ResponseType(ResponseType.Value.CODE, OIDCResponseTypeValue.ID_TOKEN, ResponseType.Value.TOKEN),
+                        transactionID,
+                        configuration.getServiceProviderURI()).toURI().toString();
+    }
+
+    @GET
     @Path("/serviceAuthenticationRequest")
     public Response formPostAuthenticationRequest() {
         String transactionID = new ClientID().toString();

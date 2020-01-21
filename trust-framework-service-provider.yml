@@ -16,7 +16,7 @@ middlewareURI: ${MIDDLEWARE_URI:-"http://localhost:3001"}
 
 governmentBrokerURI: "http://localhost:6610"
 
-rpURI: "http://localhost:4410/response"
+rpURI: "http://localhost:4410"
 
 local: ${IS_LOCAL:-true}
 

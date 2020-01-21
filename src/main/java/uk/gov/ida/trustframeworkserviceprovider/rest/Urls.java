@@ -31,4 +31,8 @@ public interface Urls {
         String AUTHENTICATION_URI = "/authentication";
         String CREDENTIAL_URI = "/issue/jwt/credential";
     }
+
+    interface RP {
+        String REDIRECT_URI = "/authenticationResponse";
+    }
 }
