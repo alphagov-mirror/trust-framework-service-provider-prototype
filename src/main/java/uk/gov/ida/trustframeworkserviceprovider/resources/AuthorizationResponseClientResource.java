@@ -66,18 +66,18 @@ public class AuthorizationResponseClientResource {
         String brokerName = getBrokerName(transactionID);
         String brokerDomain = getBrokerDomain(transactionID);
         AuthorizationCode authorizationCode = authnResponseValidationService.handleAuthenticationResponse(authenticationParams, getClientID(brokerName));
-        String userInfoInJson = retrieveTokenAndUserInfo(authorizationCode, brokerName, brokerDomain);
+        String userInfoInJson = retrieveTokenAndUserInfo(authorizationCode, brokerName, brokerDomain, transactionID);
 
         return userInfoInJson;
     }
 
-    private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerName, String brokerDomain) {
+    private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerName, String brokerDomain, String transactionID) {
 
         OIDCTokens tokens = tokenRequestService.getTokens(authCode, getClientID(brokerName), brokerDomain);
 //      UserInfo userInfo = tokenService.getUserInfo(tokens.getBearerAccessToken());
 //      String userInfoToJson = userInfo.toJSONObject().toJSONString();
 
-        return tokenRequestService.getVerifiableCredential(tokens.getBearerAccessToken(), brokerDomain);
+        return tokenRequestService.getVerifiableCredential(tokens.getBearerAccessToken(), brokerDomain, transactionID);
     }
 
     private String getBrokerName(String transactionID) {

@@ -114,13 +114,14 @@ public class TokenRequestService {
         }
     }
 
-    public String getVerifiableCredential(BearerAccessToken bearerAccessToken, String brokerDomain) {
+    public String getVerifiableCredential(BearerAccessToken bearerAccessToken, String brokerDomain, String transactionID) {
         URI userInfoURI = UriBuilder.fromUri(brokerDomain)
                 .path(Urls.StubBrokerClient.USER_INFO).build();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
                 .header("Authorization", bearerAccessToken.toAuthorizationHeader())
+                .headers("transactionID", transactionID)
                 .uri(userInfoURI)
                 .build();
 
