@@ -1,5 +1,8 @@
 package uk.gov.ida.trustframeworkserviceprovider.services.oidcclient;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.ErrorObject;
@@ -7,6 +10,7 @@ import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
+import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
@@ -17,16 +21,26 @@ import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
+import net.minidev.json.JSONObject;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import uk.gov.ida.trustframeworkserviceprovider.configuration.TrustFrameworkServiceProviderConfiguration;
 import uk.gov.ida.trustframeworkserviceprovider.rest.Urls;
 import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,21 +56,26 @@ public class TokenRequestService {
         this.redisService = redisService;
     }
 
-    public OIDCTokens getTokens(AuthorizationCode authorizationCode, ClientID clientID, String idpDomain) {
-        ClientSecretBasic clientSecretBasic = new ClientSecretBasic(clientID, new Secret());
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .build();
+
+    public OIDCTokens getTokens(AuthorizationCode authorizationCode, ClientID clientID, String idpDomain) throws IOException, JOSEException {
         URI redirectURI = UriBuilder.fromUri(configuration.getServiceProviderURI()).path(Urls.StubBrokerClient.REDIRECT_URI).build();
-        URI tokenURI = UriBuilder.fromUri(configuration.getMiddlewareURI()).path(Urls.Middleware.TOKEN_URI).build();
+        URI tokenURI = UriBuilder.fromUri(configuration.getGovernmentBrokerURI()).path(Urls.StubBrokerClient.TOKEN).build();
+        PrivateKeyJWT privateKeyJWT = new PrivateKeyJWT(clientID, tokenURI, JWSAlgorithm.RS256, (RSAPrivateKey) getPrivateKey(),null, null);
+
         Map<String, List<String>> customParams = new HashMap<>();
         customParams.put("destination-url", Collections.singletonList(idpDomain));
 
         TokenRequest tokenRequest = new TokenRequest(
                 tokenURI,
-                clientSecretBasic,
+                privateKeyJWT,
                 new AuthorizationCodeGrant(authorizationCode, redirectURI),
                 null,
                 null,
                 customParams
         );
+
 
         HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
         HTTPResponse httpResponse = sendHTTPRequest(httpRequest);
@@ -132,5 +151,36 @@ public class TokenRequestService {
             throw new RuntimeException(e);
         }
         return responseBody.body();
+    }
+
+    //For testing purposes
+    private PrivateKey getPrivateKey() throws IOException {
+        Security.addProvider(new BouncyCastleProvider());
+
+        URI directoryURI = UriBuilder.fromUri(configuration.getDirectoryURI()).path("keys/RP-1").build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(directoryURI)
+                .build();
+
+        JSONObject jsonResponse;
+
+        try {
+            HttpResponse<String>  httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            jsonResponse = JSONObjectUtils.parse(httpResponse.body());
+        } catch (IOException | InterruptedException | java.text.ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        String responseString = jsonResponse.get("signing").toString();
+        responseString = responseString.replaceAll("\\n", "").replace("-----BEGIN RSA PRIVATE KEY-----", "").replace("-----END RSA PRIVATE KEY-----", "").replaceAll("\\s+", "");
+        String anotherString = "-----BEGIN RSA PRIVATE KEY-----\n" + responseString + "\n-----END RSA PRIVATE KEY-----";
+        PEMParser pemParser = new PEMParser(new StringReader(anotherString));
+        JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+        Object object = pemParser.readObject();
+        KeyPair kp = converter.getKeyPair((PEMKeyPair) object);
+
+        return kp.getPrivate();
     }
 }

@@ -1,5 +1,6 @@
 package uk.gov.ida.trustframeworkserviceprovider.resources;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.id.ClientID;
@@ -46,7 +47,7 @@ public class AuthorizationResponseClientResource {
     @POST
     @Path("/validateAuthenticationResponse")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public String validateAuthenticationResponse(String postBody) throws java.text.ParseException, ParseException {
+    public String validateAuthenticationResponse(String postBody) throws java.text.ParseException, ParseException, IOException, JOSEException {
         Map<String, String> authenticationParams = QueryParameterHelper.splitQuery(postBody);
         String transactionID = authenticationParams.get("transactionID");
         String rpDomain = redisService.get(transactionID);
@@ -71,7 +72,7 @@ public class AuthorizationResponseClientResource {
         return userInfoInJson;
     }
 
-    private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerName, String brokerDomain, String transactionID) {
+    private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerName, String brokerDomain, String transactionID) throws IOException, JOSEException {
 
         OIDCTokens tokens = tokenRequestService.getTokens(authCode, getClientID(brokerName), brokerDomain);
 //      UserInfo userInfo = tokenService.getUserInfo(tokens.getBearerAccessToken());
