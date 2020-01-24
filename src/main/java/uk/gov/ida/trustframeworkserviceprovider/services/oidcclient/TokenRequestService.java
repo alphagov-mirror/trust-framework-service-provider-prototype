@@ -157,7 +157,7 @@ public class TokenRequestService {
     private PrivateKey getPrivateKey() throws IOException {
         Security.addProvider(new BouncyCastleProvider());
 
-        URI directoryURI = UriBuilder.fromUri(configuration.getDirectoryURI()).path("keys/RP-1").build();
+        URI directoryURI = UriBuilder.fromUri(configuration.getDirectoryURI()).path("keys").path(configuration.getOrgID()).build();
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
                 .uri(directoryURI)

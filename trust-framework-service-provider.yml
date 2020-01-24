@@ -23,3 +23,5 @@ local: ${IS_LOCAL:-true}
 softwareID: "Trust Framework Service Provider"
 
 scheme: ${SCHEME:-"1"}
+
+orgID: ${ORG_ID:-"RP-1"}

@@ -13,6 +13,7 @@ public class TrustFrameworkServiceProviderConfiguration extends Configuration {
     private String scheme;
     private String governmentBrokerURI;
     private String rpURI;
+    private String orgID;
 
     public String getServiceProviderURI() {
         return serviceProviderURI;
@@ -48,5 +49,9 @@ public class TrustFrameworkServiceProviderConfiguration extends Configuration {
 
     public String getRpURI() {
         return rpURI;
+    }
+
+    public String getOrgID() {
+        return orgID;
     }
 }
