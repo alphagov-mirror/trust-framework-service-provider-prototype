@@ -51,3 +51,9 @@ run {
     args 'server'
 }
 
+task pushToPaas(type: Exec) {
+    commandLine 'cf', 'push'
+}
+
+pushToPaas.dependsOn distZip
+

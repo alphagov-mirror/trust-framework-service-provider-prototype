@@ -14,9 +14,9 @@ directoryURI: ${DIRECTORY_URI:-"http://localhost:3000"}
 
 middlewareURI: ${MIDDLEWARE_URI:-"http://localhost:3001"}
 
-governmentBrokerURI: "http://localhost:6610"
+governmentBrokerURI: ${STUB_BROKER_URI:-"http://localhost:6610"}
 
-rpURI: "http://localhost:4410"
+rpURI: ${TRUSTFRAMEWORK_RP:-"http://localhost:4410"}
 
 local: ${IS_LOCAL:-true}
 
