@@ -15,4 +15,4 @@ if [ ! "${CID}" ]; then
 fi
 
 
-./build/install/trust-framework-service-provider-prototype/bin/trust-framework-service-provider-prototype server $CONFIG_FILE
+./build/install/trust-framework-service-provider-prototype/bin/trust-framework-service-provider-prototype server $CONFIG_FILE & echo $! > ./tmp/pids/tfsp.pid
