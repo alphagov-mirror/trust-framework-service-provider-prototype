@@ -17,7 +17,7 @@ distributions {
         contents {
             from {
                 [
-                    'trust-framework-service-provider.yml'
+                    'trust-framework-service-provider-prototype.yml'
                 ]
             }
 

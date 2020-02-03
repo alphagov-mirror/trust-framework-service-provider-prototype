@@ -5,7 +5,7 @@ applications:
     memory: 1G
     buildpacks:
       - java_buildpack
-    command: (cd trust-framework-service-provider-prototype && ls -l &&  bin/trust-framework-service-provider-prototype server ./trust-framework-service-provider.yml)
+    command: (cd trust-framework-service-provider-prototype && ls -l &&  bin/trust-framework-service-provider-prototype server ./trust-framework-service-provider-prototype.yml)
     env:
       JAVA_HOME: "../.java-buildpack/open_jdk_jre"
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 11.+ } }'
