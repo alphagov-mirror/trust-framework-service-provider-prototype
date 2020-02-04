@@ -3,22 +3,18 @@ package uk.gov.ida.trustframeworkserviceprovider.resources;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
-import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
-import io.dropwizard.views.View;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.trustframeworkserviceprovider.services.oidcclient.AuthnResponseValidationService;
 import uk.gov.ida.trustframeworkserviceprovider.services.oidcclient.TokenRequestService;
 import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
-import uk.gov.ida.trustframeworkserviceprovider.views.RPResponseView;
 import uk.gov.ida.trustframeworkserviceprovider.services.shared.QueryParameterHelper;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -55,13 +51,13 @@ public class AuthorizationResponseClientResource {
         URI rpUri = UriBuilder.fromUri(rpDomain).build();
 
         if (postBody.isEmpty()) {
-//            return new RPResponseView(rpUri, "Post Body is empty", Integer.toString(HttpStatus.SC_BAD_REQUEST));
+            return "Post Body is empty at '/validateAuthenticationResponse' on the TFSP";
         }
 
         Optional<String> errors = authnResponseValidationService.checkResponseForErrors(authenticationParams);
 
         if (errors.isPresent()) {
-//            return new RPResponseView(rpUri, "Errors in Response: " + errors.get(), Integer.toString(HttpStatus.SC_BAD_REQUEST));
+            return "Errors in Response on the TFSP: " + errors.toString();
         }
 
         String brokerName = getBrokerName(transactionID);
@@ -74,11 +70,20 @@ public class AuthorizationResponseClientResource {
 
     private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerName, String brokerDomain, String transactionID) throws IOException, JOSEException {
 
-        OIDCTokens tokens = tokenRequestService.getTokens(authCode, getClientID(brokerName), brokerDomain);
+
+        TokenResponse tokenResponse = tokenRequestService.getTokens(authCode, getClientID(brokerName), brokerDomain);
+
+        if (tokenResponse.indicatesSuccess()) {
+            return tokenRequestService.getVerifiableCredential(
+                    tokenResponse.toSuccessResponse().getTokens().getBearerAccessToken(),
+                    brokerDomain,
+                    transactionID);
+        } else {
+            return tokenResponse.toErrorResponse().toJSONObject().toString();
+        }
 //      UserInfo userInfo = tokenService.getUserInfo(tokens.getBearerAccessToken());
 //      String userInfoToJson = userInfo.toJSONObject().toJSONString();
 
-        return tokenRequestService.getVerifiableCredential(tokens.getBearerAccessToken(), brokerDomain, transactionID);
     }
 
     private String getBrokerName(String transactionID) {
