@@ -1,7 +1,7 @@
 ---
 applications:
   - name: trust-framework-service-provider-prototype
-    path: build/distributions/stub-trust-framework-service-provider-prototype.zip
+    path: build/distributions/trust-framework-service-provider-prototype.zip
     memory: 1G
     buildpacks:
       - java_buildpack
