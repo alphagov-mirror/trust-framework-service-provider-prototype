@@ -1,7 +1,7 @@
 package uk.gov.ida.trustframeworkserviceprovider.views;
 
 import io.dropwizard.views.View;
-import uk.gov.ida.trustframeworkserviceprovider.domain.Organisation;
+import uk.gov.ida.trustframeworkserviceprovider.dto.Organisation;
 
 import java.util.ArrayList;
 import java.util.List;

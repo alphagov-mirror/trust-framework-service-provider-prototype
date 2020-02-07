@@ -35,15 +35,12 @@ public class AuthorizationRequestClientResource {
     public String generateAuthenticationRequest() {
         String transactionID = new ClientID().toString();
         String brokerDomain = configuration.getGovernmentBrokerURI();
-        String brokerName = "Post Office";
-        redisService.set(transactionID, configuration.getRpURI());
-        storeBrokerNameAndDomain(transactionID, brokerName, configuration.getGovernmentBrokerURI());
         URI redirectUri = UriBuilder.fromUri(configuration.getRpURI()).path(Urls.RP.REDIRECT_URI).build();
         URI authorisationURI = UriBuilder.fromUri(brokerDomain).path("/authorizeFormPost/authorize-sp").build();
 
         return authnRequestGeneratorService.generateAuthenticationRequest(
                         authorisationURI,
-                        getClientID(brokerName),
+                        getClientID(),
                         redirectUri,
                         new ResponseType(ResponseType.Value.CODE, OIDCResponseTypeValue.ID_TOKEN, ResponseType.Value.TOKEN),
                         transactionID,
@@ -55,16 +52,13 @@ public class AuthorizationRequestClientResource {
     public Response formPostAuthenticationRequest() {
         String transactionID = new ClientID().toString();
         String brokerDomain = configuration.getGovernmentBrokerURI();
-        String brokerName = "Post Office";
-        redisService.set(transactionID, configuration.getRpURI());
-        storeBrokerNameAndDomain(transactionID, brokerName, configuration.getGovernmentBrokerURI());
         URI redirectUri = UriBuilder.fromUri(configuration.getServiceProviderURI()).path(Urls.StubBrokerClient.REDIRECT_FORM_URI).build();
         URI authorisationURI = UriBuilder.fromUri(brokerDomain).path("/authorizeFormPost/authorize-sp").build();
         return Response
                 .status(302)
                 .location(authnRequestGeneratorService.generateAuthenticationRequest(
                         authorisationURI,
-                        getClientID(brokerName),
+                        getClientID(),
                         redirectUri,
                         new ResponseType(ResponseType.Value.CODE, OIDCResponseTypeValue.ID_TOKEN, ResponseType.Value.TOKEN),
                         transactionID,
@@ -73,13 +67,8 @@ public class AuthorizationRequestClientResource {
                 .build();
     }
 
-    private void storeBrokerNameAndDomain(String transactionID, String brokerName, String brokerDomain) {
-        redisService.set(transactionID + "-brokername", brokerName);
-        redisService.set(transactionID + "-brokerdomain", brokerDomain);
-    }
-
-    private ClientID getClientID(String brokerName) {
-        String client_id = redisService.get(brokerName);
+    private ClientID getClientID() {
+        String client_id = redisService.get("client-id");
         if (client_id != null) {
             return new ClientID(client_id);
         }

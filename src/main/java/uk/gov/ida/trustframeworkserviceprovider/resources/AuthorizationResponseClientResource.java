@@ -7,6 +7,8 @@ import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.ida.trustframeworkserviceprovider.configuration.TrustFrameworkServiceProviderConfiguration;
+import uk.gov.ida.trustframeworkserviceprovider.dto.OidcResponseBody;
 import uk.gov.ida.trustframeworkserviceprovider.services.oidcclient.AuthnResponseValidationService;
 import uk.gov.ida.trustframeworkserviceprovider.services.oidcclient.TokenRequestService;
 import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
@@ -16,9 +18,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
@@ -30,29 +30,25 @@ public class AuthorizationResponseClientResource {
     private final TokenRequestService tokenRequestService;
     private final AuthnResponseValidationService authnResponseValidationService;
     private final RedisService redisService;
+    private final TrustFrameworkServiceProviderConfiguration configuration;
 
     public AuthorizationResponseClientResource(
             TokenRequestService tokenRequestService,
             AuthnResponseValidationService authnResponseValidationService,
-            RedisService redisService) {
+            RedisService redisService,
+            TrustFrameworkServiceProviderConfiguration configuration) {
         this.tokenRequestService = tokenRequestService;
         this.authnResponseValidationService = authnResponseValidationService;
         this.redisService = redisService;
+        this.configuration = configuration;
     }
 
     @POST
     @Path("/validateAuthenticationResponse")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public String validateAuthenticationResponse(String postBody) throws java.text.ParseException, ParseException, IOException, JOSEException {
-        Map<String, String> authenticationParams = QueryParameterHelper.splitQuery(postBody);
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String validateAuthenticationResponse(OidcResponseBody oidcResponseBody) throws java.text.ParseException, ParseException, IOException, JOSEException {
+        Map<String, String> authenticationParams = QueryParameterHelper.splitQuery(oidcResponseBody.getOidcResponse());
         String transactionID = authenticationParams.get("transactionID");
-        String rpDomain = redisService.get(transactionID);
-        LOG.info("RP Domain is :" + rpDomain);
-        URI rpUri = UriBuilder.fromUri(rpDomain).build();
-
-        if (postBody.isEmpty()) {
-            return "Post Body is empty at '/validateAuthenticationResponse' on the TFSP";
-        }
 
         Optional<String> errors = authnResponseValidationService.checkResponseForErrors(authenticationParams);
 
@@ -60,18 +56,17 @@ public class AuthorizationResponseClientResource {
             return "Errors in Response on the TFSP: " + errors.toString();
         }
 
-        String brokerName = getBrokerName(transactionID);
-        String brokerDomain = getBrokerDomain(transactionID);
-        AuthorizationCode authorizationCode = authnResponseValidationService.handleAuthenticationResponse(authenticationParams, getClientID(brokerName));
-        String userInfoInJson = retrieveTokenAndUserInfo(authorizationCode, brokerName, brokerDomain, transactionID);
+        String brokerDomain = configuration.getGovernmentBrokerURI();
+        AuthorizationCode authorizationCode = authnResponseValidationService.handleAuthenticationResponse(authenticationParams, getClientID(), oidcResponseBody.getState(), oidcResponseBody.getNonce());
+        String userInfoInJson = retrieveTokenAndUserInfo(authorizationCode, brokerDomain, transactionID);
 
         return userInfoInJson;
     }
 
-    private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerName, String brokerDomain, String transactionID) throws IOException, JOSEException {
+    private String retrieveTokenAndUserInfo(AuthorizationCode authCode, String brokerDomain, String transactionID) throws IOException, JOSEException {
 
 
-        TokenResponse tokenResponse = tokenRequestService.getTokens(authCode, getClientID(brokerName), brokerDomain);
+        TokenResponse tokenResponse = tokenRequestService.getTokens(authCode, getClientID(), brokerDomain);
 
         if (tokenResponse.indicatesSuccess()) {
             return tokenRequestService.getVerifiableCredential(
@@ -86,16 +81,8 @@ public class AuthorizationResponseClientResource {
 
     }
 
-    private String getBrokerName(String transactionID) {
-        return redisService.get(transactionID + "-brokername");
-    }
-
-    private String getBrokerDomain(String transactionID) {
-        return redisService.get(transactionID + "-brokerdomain");
-    }
-
-    private ClientID getClientID(String brokerName) {
-        String client_id = redisService.get(brokerName);
+    private ClientID getClientID() {
+        String client_id = redisService.get("client-id");
         if (client_id != null) {
             return new ClientID(client_id);
         }

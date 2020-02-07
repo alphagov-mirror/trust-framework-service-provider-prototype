@@ -25,7 +25,7 @@ public class AuthnResponseValidationService {
         this.tokenRequestService = tokenRequestService;
     }
 
-    public AuthorizationCode handleAuthenticationResponse(Map<String, String> authenticationParams, ClientID clientID)
+    public AuthorizationCode handleAuthenticationResponse(Map<String, String> authenticationParams, ClientID clientID, String sessionState, String sessionNonce)
             throws ParseException, java.text.ParseException {
 
         String authCode = authenticationParams.get("code");
@@ -42,14 +42,15 @@ public class AuthnResponseValidationService {
             AccessToken accessToken = new BearerAccessToken(stringAccessToken);
             validateAccessTokenHash(accessToken, idToken);
         }
-
-        String state = authenticationParams.get("state");
-        String nonce = tokenRequestService.getNonce(state);
+//        String state = authenticationParams.get("state");
+//      String nonce = tokenRequestService.getNonce(state);
 
         validateCHash(authorizationCode, idToken);
 
-        validateNonce(nonce, idToken);
-        validateNonceUsageCount(tokenRequestService.getNonceUsageCount(nonce));
+        validateNonce(sessionNonce, idToken);
+
+
+//        validateNonceUsageCount(tokenRequestService.getNonceUsageCount(sessionNonce));
 
         validateIssuer(idToken);
 
@@ -124,7 +125,10 @@ public class AuthnResponseValidationService {
         //TODO - Get the issuer from the Discovery when it is implemented
     }
 
-    private void validateState() {
+    private void validateState(String sessionState, String responseState) {
+        if (!sessionState.equals(responseState)) {
+            throw new RuntimeException("Session state and response state do not match");
+        }
         //TODO As per 10.12 on RFC6749 to mitigate against Cross-Site Request Forgery
         //and compare the STATE parameter against what was sent in to the request to that
         //which was received in the response

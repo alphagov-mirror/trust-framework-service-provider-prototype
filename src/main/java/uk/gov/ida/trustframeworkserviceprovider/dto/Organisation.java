@@ -1,4 +1,4 @@
-package uk.gov.ida.trustframeworkserviceprovider.domain;
+package uk.gov.ida.trustframeworkserviceprovider.dto;
 
 import javax.annotation.Nullable;
 

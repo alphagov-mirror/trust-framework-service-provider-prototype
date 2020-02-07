@@ -42,9 +42,6 @@ public class AuthnRequestGeneratorService {
                 .customParameter("response-uri", serviceProviderURI)
                 .build();
 
-        redisService.set("state::" + state.getValue(), nonce.getValue());
-        redisService.incr("nonce::" + nonce.getValue());
-
         return authenticationRequest;
     }
 }

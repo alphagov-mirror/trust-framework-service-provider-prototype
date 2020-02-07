@@ -53,6 +53,6 @@ public class TrustFrameworkServiceProviderApplication extends Application<TrustF
         environment.jersey().register(new AuthorizationRequestClientResource(configuration, authnRequestGeneratorService, redisService));
         environment.jersey().register(new JsonProcessingExceptionMapper(true));
         environment.jersey().register(new RegistrationRequestResource(registrationRequestService, redisService, configuration));
-        environment.jersey().register(new AuthorizationResponseClientResource(tokenRequestService, authResponseService, redisService));
+        environment.jersey().register(new AuthorizationResponseClientResource(tokenRequestService, authResponseService, redisService, configuration));
     }
 }

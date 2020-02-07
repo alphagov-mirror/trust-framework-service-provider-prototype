@@ -1,9 +1,8 @@
 package uk.gov.ida.trustframeworkserviceprovider.resources;
 
-import com.nimbusds.jose.JOSEException;
 import io.dropwizard.views.View;
 import uk.gov.ida.trustframeworkserviceprovider.configuration.TrustFrameworkServiceProviderConfiguration;
-import uk.gov.ida.trustframeworkserviceprovider.domain.Organisation;
+import uk.gov.ida.trustframeworkserviceprovider.dto.Organisation;
 import uk.gov.ida.trustframeworkserviceprovider.rest.Urls;
 import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 import uk.gov.ida.trustframeworkserviceprovider.services.oidcclient.RegistrationRequestService;

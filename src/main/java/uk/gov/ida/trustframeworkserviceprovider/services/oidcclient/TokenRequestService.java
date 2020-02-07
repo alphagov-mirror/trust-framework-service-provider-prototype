@@ -99,18 +99,6 @@ public class TokenRequestService {
         }
     }
 
-    public String getNonce(String state) {
-        String nonce = redisService.get("state::" + state);
-        if (nonce == null || nonce.length() < 1) {
-            throw new RuntimeException("Nonce not found in data store");
-        }
-        return nonce;
-    }
-
-    public Long getNonceUsageCount(String nonce) {
-        return redisService.incr("nonce::" + nonce);
-    }
-
     private HTTPResponse sendHTTPRequest(HTTPRequest request) {
 
         try {

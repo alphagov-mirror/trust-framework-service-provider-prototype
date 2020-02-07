@@ -18,7 +18,7 @@ import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import uk.gov.ida.trustframeworkserviceprovider.configuration.TrustFrameworkServiceProviderConfiguration;
-import uk.gov.ida.trustframeworkserviceprovider.domain.Organisation;
+import uk.gov.ida.trustframeworkserviceprovider.dto.Organisation;
 import uk.gov.ida.trustframeworkserviceprovider.rest.Urls;
 import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 
@@ -133,7 +133,7 @@ public class RegistrationRequestService {
         }
 
         if (jsonObjectResponse.get("client_id") != null) {
-            saveClientID(brokerName, jsonObjectResponse.get("client_id").toString());
+            saveClientID(jsonObjectResponse.get("client_id").toString());
         }
 
         return httpResponse;
@@ -201,8 +201,8 @@ public class RegistrationRequestService {
         }
     }
 
-    private void saveClientID(String brokerName, String clientID) {
-        redisService.set(brokerName, clientID);
+    private void saveClientID(String clientID) {
+        redisService.set("client-id", clientID);
     }
 }
 
