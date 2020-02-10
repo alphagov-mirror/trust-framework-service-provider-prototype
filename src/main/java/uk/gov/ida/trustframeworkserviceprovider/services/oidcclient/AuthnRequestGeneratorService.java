@@ -7,16 +7,12 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
-import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 
 import java.net.URI;
 
 public class AuthnRequestGeneratorService {
 
-    private final RedisService redisService;
-
-    public AuthnRequestGeneratorService(RedisService redisService) {
-        this.redisService = redisService;
+    public AuthnRequestGeneratorService() {
     }
 
     public AuthenticationRequest generateAuthenticationRequest(

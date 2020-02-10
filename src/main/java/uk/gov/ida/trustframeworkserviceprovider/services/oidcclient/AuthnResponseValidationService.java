@@ -22,19 +22,27 @@ public class AuthnResponseValidationService {
     public AuthnResponseValidationService() {
     }
 
-    public AuthorizationCode handleAuthenticationResponse(Map<String, String> authenticationParams, ClientID clientID, String sessionState, String sessionNonce)
-            throws ParseException, java.text.ParseException {
+    public AuthorizationCode handleAuthenticationResponse(
+            Map<String, String> authenticationParams,
+            ClientID clientID,
+            String sessionState,
+            String sessionNonce) {
 
         String authCode = authenticationParams.get("code");
         AuthorizationCode authorizationCode = new AuthorizationCode(authCode);
 
         String id_token = authenticationParams.get("id_token");
-        SignedJWT signedJWT = SignedJWT.parse(id_token);
-        JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-        IDTokenClaimsSet idToken = new IDTokenClaimsSet(jwtClaimsSet);
+        IDTokenClaimsSet idToken;
+
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(id_token);
+            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+            idToken = new IDTokenClaimsSet(jwtClaimsSet);
+        } catch (ParseException| java.text.ParseException e) {
+            throw new RuntimeException(e);
+        }
 
         String stringAccessToken = authenticationParams.get("access_token");
-
         if (stringAccessToken != null && stringAccessToken.length() > 0) {
             AccessToken accessToken = new BearerAccessToken(stringAccessToken);
             validateAccessTokenHash(accessToken, idToken);
@@ -47,7 +55,7 @@ public class AuthnResponseValidationService {
         validateAudience(clientID, idToken);
 
 //        validateNonceUsageCount(tokenRequestService.getNonceUsageCount(sessionNonce));
-        
+
         return authorizationCode;
     }
 

@@ -13,10 +13,8 @@ public class RedisService {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisService.class);
     private RedisCommands<String, String> commands;
-    private TrustFrameworkServiceProviderConfiguration configuration;
 
     public RedisService(TrustFrameworkServiceProviderConfiguration config) {
-        this.configuration = config;
         startup(config);
     }
 
