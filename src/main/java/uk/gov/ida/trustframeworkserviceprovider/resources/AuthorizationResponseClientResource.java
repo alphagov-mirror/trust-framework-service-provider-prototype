@@ -5,6 +5,8 @@ import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
+import net.minidev.json.JSONObject;
+import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.trustframeworkserviceprovider.configuration.TrustFrameworkServiceProviderConfiguration;
@@ -53,7 +55,9 @@ public class AuthorizationResponseClientResource {
         Optional<String> errors = authnResponseValidationService.checkResponseForErrors(authenticationParams);
 
         if (errors.isPresent()) {
-            return "Errors in Response on the TFSP: " + errors.toString();
+            JSONObject errorJsonObject = new JSONObject();
+            errorJsonObject.put("Errors in Response on the TFSP", errors.toString());
+            return errorJsonObject.toString();
         }
 
         String brokerDomain = configuration.getGovernmentBrokerURI();

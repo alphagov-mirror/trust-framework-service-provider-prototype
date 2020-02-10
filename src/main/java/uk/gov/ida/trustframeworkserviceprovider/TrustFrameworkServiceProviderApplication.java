@@ -47,7 +47,7 @@ public class TrustFrameworkServiceProviderApplication extends Application<TrustF
     private void registerOidcClientResources(Environment environment, TrustFrameworkServiceProviderConfiguration configuration, RedisService redisService) {
         TokenRequestService tokenRequestService = new TokenRequestService(configuration, redisService);
         AuthnRequestGeneratorService authnRequestGeneratorService = new AuthnRequestGeneratorService(redisService);
-        AuthnResponseValidationService authResponseService = new AuthnResponseValidationService(tokenRequestService);
+        AuthnResponseValidationService authResponseService = new AuthnResponseValidationService();
         RegistrationRequestService registrationRequestService = new RegistrationRequestService(redisService, configuration);
 
         environment.jersey().register(new AuthorizationRequestClientResource(configuration, authnRequestGeneratorService, redisService));

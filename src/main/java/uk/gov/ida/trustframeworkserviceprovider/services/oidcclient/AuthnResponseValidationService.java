@@ -19,10 +19,7 @@ import java.util.Optional;
 
 public class AuthnResponseValidationService {
 
-    private final TokenRequestService tokenRequestService;
-
-    public AuthnResponseValidationService(TokenRequestService tokenRequestService) {
-        this.tokenRequestService = tokenRequestService;
+    public AuthnResponseValidationService() {
     }
 
     public AuthorizationCode handleAuthenticationResponse(Map<String, String> authenticationParams, ClientID clientID, String sessionState, String sessionNonce)
@@ -42,20 +39,15 @@ public class AuthnResponseValidationService {
             AccessToken accessToken = new BearerAccessToken(stringAccessToken);
             validateAccessTokenHash(accessToken, idToken);
         }
-//        String state = authenticationParams.get("state");
-//      String nonce = tokenRequestService.getNonce(state);
 
         validateCHash(authorizationCode, idToken);
-
         validateNonce(sessionNonce, idToken);
-
-
-//        validateNonceUsageCount(tokenRequestService.getNonceUsageCount(sessionNonce));
-
+        validateState(sessionState, authenticationParams.get("state"));
         validateIssuer(idToken);
-
         validateAudience(clientID, idToken);
 
+//        validateNonceUsageCount(tokenRequestService.getNonceUsageCount(sessionNonce));
+        
         return authorizationCode;
     }
 
