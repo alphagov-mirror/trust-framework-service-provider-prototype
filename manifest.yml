@@ -1,6 +1,6 @@
 ---
 applications:
-  - name: trust-framework-service-provider-prototype
+  - name: trust-framework-service-provider-prototype-1
     path: build/distributions/trust-framework-service-provider-prototype.zip
     memory: 1G
     buildpacks:
@@ -9,11 +9,28 @@ applications:
     env:
       JAVA_HOME: "../.java-buildpack/open_jdk_jre"
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 11.+ } }'
-      SERVICE_PROVIDER_URI: https://trust-framework-service-provider-prototype.cloudapps.digital
+      SERVICE_PROVIDER_URI: https://trust-framework-service-provider-prototype-1.cloudapps.digital
       TRUSTFRAMEWORK_RP: https://stub-trustframework-rp-1.cloudapps.digital
       DIRECTORY_URI: https://directory-prototype.cloudapps.digital
       STUB_BROKER_URI: https://stub-oidc-broker-1.cloudapps.digital
       IS_LOCAL: false
       SCHEME: 1
       ORG_ID: RP-1
+      APPLICATION_PORT: 8080
+  - name: trust-framework-service-provider-prototype-2
+    path: build/distributions/trust-framework-service-provider-prototype.zip
+    memory: 1G
+    buildpacks:
+      - java_buildpack
+    command: (cd trust-framework-service-provider-prototype && ls -l &&  bin/trust-framework-service-provider-prototype server ./trust-framework-service-provider-prototype.yml)
+    env:
+      JAVA_HOME: "../.java-buildpack/open_jdk_jre"
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 11.+ } }'
+      SERVICE_PROVIDER_URI: https://trust-framework-service-provider-prototype-2.cloudapps.digital
+      TRUSTFRAMEWORK_RP: https://stub-trustframework-rp-2.cloudapps.digital
+      DIRECTORY_URI: https://directory-prototype.cloudapps.digital
+      STUB_BROKER_URI: https://stub-oidc-broker-1.cloudapps.digital
+      IS_LOCAL: false
+      SCHEME: 2
+      ORG_ID: RP-2
       APPLICATION_PORT: 8080
