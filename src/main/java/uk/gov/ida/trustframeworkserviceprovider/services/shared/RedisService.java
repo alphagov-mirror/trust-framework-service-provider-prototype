@@ -14,20 +14,22 @@ public class RedisService {
     private static final Logger LOG = LoggerFactory.getLogger(RedisService.class);
     private RedisCommands<String, String> commands;
 
-    public RedisService(TrustFrameworkServiceProviderConfiguration config) {
-        startup(config);
+    public RedisService(TrustFrameworkServiceProviderConfiguration configuration) {
+        startup(configuration);
     }
 
-    public void startup(TrustFrameworkServiceProviderConfiguration config) {
+    public void startup(TrustFrameworkServiceProviderConfiguration configuration) {
         String vcap = System.getenv("VCAP_SERVICES");
-        String redisUri = config.getRedisURI();
+        String redisUri = configuration.getRedisURI();
         if (vcap != null && vcap.length() > 0) {
             String redisURIFromVcap = getRedisURIFromVcap(vcap);
             if (redisURIFromVcap != null) {
                 redisUri = redisURIFromVcap;
             }
         }
-        RedisClient client = RedisClient.create(redisUri + "/" + 3);
+        String databaseNumber;
+        databaseNumber  = ((configuration.getOrgID() == "RP-1") ? "6" : "7");
+        RedisClient client = RedisClient.create(redisUri + "/" + databaseNumber);
         LOG.info("REDIS URI" + redisUri);
         commands = client.connect().sync();
     }
