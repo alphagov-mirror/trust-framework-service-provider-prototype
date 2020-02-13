@@ -28,7 +28,7 @@ public class RedisService {
             }
         }
         String databaseNumber;
-        databaseNumber  = ((configuration.getOrgID() == "RP-1") ? "6" : "7");
+        databaseNumber  = (configuration.getOrgID().equals("RP-1") ? "6" : "7");
         RedisClient client = RedisClient.create(redisUri + "/" + databaseNumber);
         LOG.info("REDIS URI" + redisUri);
         commands = client.connect().sync();
