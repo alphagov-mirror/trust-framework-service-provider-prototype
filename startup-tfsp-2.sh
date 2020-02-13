@@ -6,6 +6,7 @@ LOCAL_IP="$(ipconfig getifaddr en0)"
 export APPLICATION_PORT=2211
 export ADMIN_PORT=2221
 export SERVICE_PROVIDER_URI=http://localhost:2211
+export TRUSTFRAMEWORK_RP=http://localhost:4412
 export ORG_ID=RP-2
 export REDIS_URI="redis://${LOCAL_IP}:6380"
 log="logs/tfsp_console.log"
