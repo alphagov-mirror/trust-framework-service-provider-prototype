@@ -3,6 +3,10 @@ set -e
 
 CONFIG_FILE=./trust-framework-service-provider-prototype.yml
 LOCAL_IP="$(ipconfig getifaddr en0)"
+export APPLICATION_PORT=2210
+export ADMIN_PORT=2220
+export SERVICE_PROVIDER_URI=http://localhost:2210
+export ORG_ID=RP-1
 export REDIS_URI="redis://${LOCAL_IP}:6380"
 log="logs/tfsp_console.log"
 
@@ -29,4 +33,4 @@ if [ ! -d $LOGS_DIR ]; then
 fi
 
 ./build/install/trust-framework-service-provider-prototype/bin/trust-framework-service-provider-prototype server $CONFIG_FILE &
-  echo $! > ./tmp/pids/tfsp.pid
+  echo $! > ./tmp/pids/tfsp-1.pid

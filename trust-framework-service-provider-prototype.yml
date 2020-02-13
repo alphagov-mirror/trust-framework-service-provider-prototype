@@ -4,11 +4,11 @@ server:
       port: ${APPLICATION_PORT:-2210}
   adminConnectors:
     - type: http
-      port: ${ADMIN_PORT:-2211}
+      port: ${ADMIN_PORT:-2220}
 
 serviceProviderURI: ${SERVICE_PROVIDER_URI:-"http://localhost:2210"}
 
-redisURI: ${REDIS_URI:-"redis://192.168.204.170:6380"}
+redisURI: ${REDIS_URI:-"redis://192.168.204.177:6380"}
 
 directoryURI: ${DIRECTORY_URI:-"http://localhost:3000"}
 

@@ -46,7 +46,7 @@ public class TrustFrameworkServiceProviderApplication extends Application<TrustF
 
     private void registerOidcClientResources(Environment environment, TrustFrameworkServiceProviderConfiguration configuration, RedisService redisService) {
         TokenRequestService tokenRequestService = new TokenRequestService(configuration, redisService);
-        AuthnRequestGeneratorService authnRequestGeneratorService = new AuthnRequestGeneratorService(redisService);
+        AuthnRequestGeneratorService authnRequestGeneratorService = new AuthnRequestGeneratorService();
         AuthnResponseValidationService authResponseService = new AuthnResponseValidationService();
         RegistrationRequestService registrationRequestService = new RegistrationRequestService(redisService, configuration);
 
