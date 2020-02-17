@@ -7,17 +7,20 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
+import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 
 import java.net.URI;
 
 public class AuthnRequestGeneratorService {
 
-    public AuthnRequestGeneratorService() {
+    private final RedisService redisService;
+
+    public AuthnRequestGeneratorService(RedisService redisService) {
+        this.redisService = redisService;
     }
 
     public AuthenticationRequest generateAuthenticationRequest(
             URI requestUri,
-            ClientID clientID,
             URI redirectUri,
             ResponseType responseType,
             String transactionID,
@@ -29,7 +32,7 @@ public class AuthnRequestGeneratorService {
 
         AuthenticationRequest authenticationRequest = new AuthenticationRequest.Builder(
                 responseType,
-                scope, clientID, redirectUri)
+                scope, getClientID(), redirectUri)
                 .responseMode(ResponseMode.FORM_POST)
                 .endpointURI(requestUri)
                 .state(state)
@@ -39,5 +42,13 @@ public class AuthnRequestGeneratorService {
                 .build();
 
         return authenticationRequest;
+    }
+
+    private ClientID getClientID() {
+        String client_id = redisService.get("client-id");
+        if (client_id != null) {
+            return new ClientID(client_id);
+        }
+        return new ClientID();
     }
 }

@@ -6,11 +6,9 @@ import com.nimbusds.openid.connect.sdk.OIDCResponseTypeValue;
 import uk.gov.ida.trustframeworkserviceprovider.configuration.TrustFrameworkServiceProviderConfiguration;
 import uk.gov.ida.trustframeworkserviceprovider.rest.Urls;
 import uk.gov.ida.trustframeworkserviceprovider.services.oidcclient.AuthnRequestGeneratorService;
-import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
@@ -19,15 +17,12 @@ public class AuthorizationRequestClientResource {
 
     private final TrustFrameworkServiceProviderConfiguration configuration;
     private final AuthnRequestGeneratorService authnRequestGeneratorService;
-    private final RedisService redisService;
 
     public AuthorizationRequestClientResource(
             TrustFrameworkServiceProviderConfiguration configuration,
-            AuthnRequestGeneratorService authnRequestGeneratorService,
-            RedisService redisService) {
+            AuthnRequestGeneratorService authnRequestGeneratorService) {
         this.configuration = configuration;
         this.authnRequestGeneratorService = authnRequestGeneratorService;
-        this.redisService = redisService;
     }
 
     @GET
@@ -36,42 +31,13 @@ public class AuthorizationRequestClientResource {
         String transactionID = new ClientID().toString();
         String brokerDomain = configuration.getGovernmentBrokerURI();
         URI redirectUri = UriBuilder.fromUri(configuration.getRpURI()).path(Urls.RP.REDIRECT_URI).build();
-        URI authorisationURI = UriBuilder.fromUri(brokerDomain).path("/authorizeFormPost/authorize-sp").build();
+        URI authorisationURI = UriBuilder.fromUri(brokerDomain).path(Urls.StubBrokerOPProvider.AUTHORISATION_ENDPOINT_FORM_URI).build();
 
         return authnRequestGeneratorService.generateAuthenticationRequest(
                         authorisationURI,
-                        getClientID(),
                         redirectUri,
                         new ResponseType(ResponseType.Value.CODE, OIDCResponseTypeValue.ID_TOKEN, ResponseType.Value.TOKEN),
                         transactionID,
                         configuration.getServiceProviderURI()).toURI().toString();
-    }
-
-    @GET
-    @Path("/serviceAuthenticationRequest")
-    public Response formPostAuthenticationRequest() {
-        String transactionID = new ClientID().toString();
-        String brokerDomain = configuration.getGovernmentBrokerURI();
-        URI redirectUri = UriBuilder.fromUri(configuration.getServiceProviderURI()).path(Urls.StubBrokerClient.REDIRECT_FORM_URI).build();
-        URI authorisationURI = UriBuilder.fromUri(brokerDomain).path("/authorizeFormPost/authorize-sp").build();
-        return Response
-                .status(302)
-                .location(authnRequestGeneratorService.generateAuthenticationRequest(
-                        authorisationURI,
-                        getClientID(),
-                        redirectUri,
-                        new ResponseType(ResponseType.Value.CODE, OIDCResponseTypeValue.ID_TOKEN, ResponseType.Value.TOKEN),
-                        transactionID,
-                        configuration.getServiceProviderURI())
-                        .toURI())
-                .build();
-    }
-
-    private ClientID getClientID() {
-        String client_id = redisService.get("client-id");
-        if (client_id != null) {
-            return new ClientID(client_id);
-        }
-        return new ClientID();
     }
 }

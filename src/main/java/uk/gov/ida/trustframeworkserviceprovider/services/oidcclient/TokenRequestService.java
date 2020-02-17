@@ -24,7 +24,6 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import uk.gov.ida.trustframeworkserviceprovider.configuration.TrustFrameworkServiceProviderConfiguration;
 import uk.gov.ida.trustframeworkserviceprovider.rest.Urls;
-import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -44,17 +43,15 @@ import java.util.Map;
 
 public class TokenRequestService {
 
-    private final RedisService redisService;
     private final TrustFrameworkServiceProviderConfiguration configuration;
 
-    public TokenRequestService(TrustFrameworkServiceProviderConfiguration configuration, RedisService redisService) {
+    public TokenRequestService(TrustFrameworkServiceProviderConfiguration configuration) {
         this.configuration = configuration;
-        this.redisService = redisService;
     }
 
     public TokenResponse getTokens(AuthorizationCode authorizationCode, ClientID clientID, String idpDomain) {
         URI redirectURI = UriBuilder.fromUri(configuration.getServiceProviderURI()).path(Urls.StubBrokerClient.REDIRECT_URI).build();
-        URI tokenURI = UriBuilder.fromUri(configuration.getGovernmentBrokerURI()).path(Urls.StubBrokerClient.TOKEN).build();
+        URI tokenURI = UriBuilder.fromUri(configuration.getGovernmentBrokerURI()).path(Urls.StubBrokerOPProvider.TOKEN).build();
 
         PrivateKeyJWT privateKeyJWT;
         try {
@@ -116,7 +113,7 @@ public class TokenRequestService {
 
     public String getVerifiableCredential(BearerAccessToken bearerAccessToken, String brokerDomain, String transactionID) {
         URI userInfoURI = UriBuilder.fromUri(brokerDomain)
-                .path(Urls.StubBrokerClient.USER_INFO).build();
+                .path(Urls.StubBrokerOPProvider.USERINFO_URI).build();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
