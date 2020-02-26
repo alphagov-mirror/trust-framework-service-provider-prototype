@@ -6,10 +6,13 @@ import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
+import com.nimbusds.openid.connect.sdk.ClaimsRequest;
 import com.nimbusds.openid.connect.sdk.Nonce;
+import com.nimbusds.openid.connect.sdk.claims.ClaimRequirement;
 import uk.gov.ida.trustframeworkserviceprovider.services.shared.RedisService;
 
 import java.net.URI;
+import java.util.Map;
 
 public class AuthnRequestGeneratorService {
 
@@ -24,11 +27,18 @@ public class AuthnRequestGeneratorService {
             URI redirectUri,
             ResponseType responseType,
             String transactionID,
-            String serviceProviderURI) {
+            String serviceProviderURI,
+            Map<String, String> claims) {
         Scope scope = new Scope("openid");
 
         State state = new State();
         Nonce nonce = new Nonce();
+        ClaimsRequest claimsRequest = new ClaimsRequest();
+        claims.forEach((claimName,requirement) ->
+                claimsRequest.addUserInfoClaim(
+                        claimName,
+                        requirement.equals("essential") ? ClaimRequirement.ESSENTIAL : ClaimRequirement.VOLUNTARY)
+        );
 
         AuthenticationRequest authenticationRequest = new AuthenticationRequest.Builder(
                 responseType,
@@ -37,6 +47,7 @@ public class AuthnRequestGeneratorService {
                 .endpointURI(requestUri)
                 .state(state)
                 .nonce(nonce)
+                .claims(claimsRequest)
                 .customParameter("transaction-id", transactionID)
                 .customParameter("response-uri", serviceProviderURI)
                 .build();
